@@ -4,28 +4,38 @@
 typedef struct Node{
     int data;
     struct Node * next;
+    struct Node * prev;
 
 }Node;
 
 typedef struct LinkedList {
     Node * head;
+    Node * tail;
 }LinkedList;
 
 void init(LinkedList * ll){
     ll->head = NULL;
-
+    ll->tail = NULL;
 }
 
 Node * createNode(int data){
     Node * newNode = (Node *) malloc(sizeof(Node));
     newNode->data  = data;
     newNode->next = NULL;
+    newNode->prev = NULL;
     return newNode;
 }
 
 void insertFirst(LinkedList * ll,int data){
+    if(ll->head == NULL){
+        Node * newNode = createNode(data);
+        ll->head = newNode;
+        ll->tail = ll->head;
+        return;
+    }
     Node * newNode = createNode(data);
     newNode->next = ll->head;
+    ll->head->prev = newNode;
     ll->head = newNode;
 
 }
@@ -37,14 +47,12 @@ void insertLast(LinkedList * ll,int data){
 
     }
 
-    Node * temp = ll->head;
+    
     Node * newNode = createNode(data);
+    newNode->prev = ll->tail;
+    ll->tail->next = newNode;
+    ll->tail = newNode;
 
-    while(temp->next != NULL){
-        temp= temp->next;
-    }
-
-    temp->next = newNode;
 
 }
 
@@ -58,13 +66,16 @@ void insert(LinkedList * ll ,int data,int index){
     Node * newNode = createNode(data);
     Node * temp = ll->head;
     // am assuming it not going out of the range so here i am not going to check the null
-    for(int i =1;i<index-1;i++){
+    for(int i =1;i<index;i++){
         temp = temp->next;
     }
 
-    Node * next = temp->next;
-    temp->next = newNode;
-    newNode->next = next;
+    Node * prev = temp->prev;
+    newNode->prev = prev;
+    newNode->next = temp;
+
+    prev->next = newNode;
+    temp->prev = newNode;
 }
 
 void deleteFirst(LinkedList * ll){
@@ -76,22 +87,17 @@ void deleteFirst(LinkedList * ll){
     Node * newHead = ll->head->next;
     Node * del = ll->head;
     ll->head = newHead;
+
+    if(newHead != NULL)
+        newHead->prev = NULL;
+    else
+        ll->tail = NULL;
+
     free(del);
 
 }
 
-void deleteFirst(LinkedList * ll){
-    if(ll->head == NULL){
-        printf("linked list is empty");
-        return;
-    }
 
-    Node * newHead = ll->head->next;
-    Node * del = ll->head;
-    ll->head = newHead;
-
-    free(newHead);
-}
 
 
 void deleteLast(LinkedList * ll){
@@ -105,16 +111,9 @@ void deleteLast(LinkedList * ll){
         return;
     }
 
-
-    Node * temp = ll->head;
-
-    while(temp->next->next != NULL){
-        temp = temp->next;
-    }
-
-    Node * del = temp->next;
-    temp->next = NULL;
-
+    Node * del = ll->tail;
+    ll->tail = ll->tail->prev;
+    ll->tail->next = NULL;
     free(del);
 }
 
@@ -127,13 +126,23 @@ void delete(LinkedList * ll,int index){
     }
 
     Node * temp = ll->head;
-    for(int i =1;i < index-1;i++){
+    for(int i =1;i < index;i++){
         temp = temp->next;
     }
 
-    Node * del = temp->next;
-    temp->next = temp->next->next;
+    if(temp == ll->tail){
+        deleteLast(ll);
+        return;
+    }
 
+    Node * prev = temp->prev;
+    Node * next = temp->next;
+
+    prev->next = next;
+    next->prev = prev;
+    
+
+    Node * del = temp;
     free(del);
 
 }
