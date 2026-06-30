@@ -24,6 +24,8 @@ int main(){
     for (int i = 0; i <n; i++){
         printf("%d ",arr[i]);
     }
+    char str [50];
+    fgets(str,sizeof(str),stdin);
     
      
 }
